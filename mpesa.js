@@ -3,11 +3,13 @@ const axios = require("axios");
 const moment = require("moment");
 const router = express.Router();
 
-// Replace with your actual Safaricom sandbox credentials
-const consumerKey = "YOUR_CONSUMER_KEY";
-const consumerSecret = "YOUR_CONSUMER_SECRET";
-const businessShortCode = "4096591"; // Your paybill number
-const passkey = "YOUR_PASSKEY"; // Your sandbox passkey
+// Your Safaricom sandbox credentials (ensure these are the correct sandbox keys)
+const consumerKey = "y2GBWOA9DSYo8gJcTPibAcBBdQrg5AmDPpShCKOgHHu7wauy";
+const consumerSecret = "mx8zrGgGVGcIAlQkfpa6VvOKBGeAZPmGCnOQ4heqsSY2VaelcK0jMxuMLmscwUFD";
+
+// Use sandbox defaults for STK Push
+const businessShortCode = "174379"; // Default sandbox Business Short Code
+const passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c8937"; // Default sandbox Passkey
 
 // Sandbox endpoints
 const authUrl = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
@@ -22,8 +24,18 @@ async function getAccessToken() {
   return response.data.access_token;
 }
 
+// Helper function to format phone numbers to international format
+function formatPhoneNumber(phoneNumber) {
+  let formatted = phoneNumber.trim();
+  if (formatted.startsWith("0")) {
+    formatted = "254" + formatted.slice(1);
+  }
+  return formatted;
+}
+
 // Function to initiate an STK Push (simulate payment prompt)
 async function initiateStkPush(phoneNumber, amount, accountReference) {
+  const formattedPhone = formatPhoneNumber(phoneNumber);
   const accessToken = await getAccessToken();
   const timestamp = moment().format("YYYYMMDDHHmmss");
   const password = Buffer.from(`${businessShortCode}${passkey}${timestamp}`).toString("base64");
@@ -33,12 +45,12 @@ async function initiateStkPush(phoneNumber, amount, accountReference) {
     Password: password,
     Timestamp: timestamp,
     TransactionType: "CustomerPayBillOnline",
-    Amount: amount, // Here, 100 for processing fee
-    PartyA: phoneNumber, // Customer's number (format: 2547XXXXXXXX)
+    Amount: amount,
+    PartyA: formattedPhone,
     PartyB: businessShortCode,
-    PhoneNumber: phoneNumber,
-    CallBackURL: "https://yourdomain.com/mpesa-callback", // Update with your callback URL
-    AccountReference: accountReference, // For example, client's name
+    PhoneNumber: formattedPhone,
+    CallBackURL: "https://loansbackend.onrender.com/mpesa-callback", // Update with your actual callback URL
+    AccountReference: accountReference,
     TransactionDesc: "Loan processing fee",
   };
 
@@ -65,3 +77,5 @@ router.post("/stkpush", async (req, res) => {
 });
 
 module.exports = router;
+
+
