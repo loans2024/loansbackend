@@ -91,3 +91,8 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+// Other requires at the top
+const mpesaRoutes = require('./mpesa');
+
+// After app.use(express.json());
+app.use("/api", mpesaRoutes);
