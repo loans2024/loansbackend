@@ -1,11 +1,12 @@
 // db.js
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
-const pool = new Pool({
-  connectionString: 'postgresql://apploan_user:LEXsU6zUIwvNqZ3Hv1ZMXfKg5nUoGsoc@dpg-cv2pgjl6l47c7381o0fg-a.oregon-postgres.render.com/apploan',
-  ssl: {
-    rejectUnauthorized: false,
-  },
+// This stores your DB in a file called loans.db (in project folder)
+const db = new sqlite3.Database(path.resolve(__dirname, 'loans.db'), (err) => {
+  if (err) console.error('Failed to connect to SQLite DB:', err);
+  else console.log('Connected to SQLite database');
 });
 
-module.exports = pool;
+module.exports = db;
+
